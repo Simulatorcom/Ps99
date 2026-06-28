@@ -1,0 +1,157 @@
+local Rayfield = loadstring(game:HttpGet("https://sirius.menu/rayfield"))()
+
+local Window = Rayfield:CreateWindow({
+   Name = "NCK Hub",
+   Icon = 0,
+   LoadingTitle = "NCK Hub",
+   LoadingSubtitle = "by NCK",
+   ShowText = "NCK Hub",
+   Theme = "Default",
+   ToggleUIKeybind = "K",
+   DisableRayfieldPrompts = true,
+   DisableBuildWarnings = true,
+   KeySystem = true,
+   KeySettings = {
+      Title = "NCK Key",
+      Subtitle = "Key System",
+      Note = "Get The Key From The Discord",
+      FileName = "Key",
+      SaveKey = true,
+      GrabKeyFromSite = false,
+      Key = {"dyOFNxENOfsfIrqOEfAUJXSNsryocSRF"}
+   }
+})
+
+local player = game.Players.LocalPlayer
+
+local InfoTab = Window:CreateTab("| Info", "info")
+local AutomaticTab = Window:CreateTab("| Automatic", "watch")
+local UpgradeTab = Window:CreateTab("| Upgrade")
+local TeleportTab = Window:CreateTab("| Teleport", "plane")
+
+local AutoThrowRunning = false
+local AutoThrowInfRunning = false
+local AutoOrbsRunning = false
+local AutoUpgradeRunning = false
+
+local UpgradeIds = {
+    ["Upgrade Final Egg"] = "SoccerBetterYeetEgg",
+    ["More Orb Strength"] = "SoccerYeetOrbStrength",
+    ["Yeet Orbs Reach"] = "SoccerYeetOrbsReach",
+    ["Higher Critical Yeet Chance"] = "SoccerCriticalThrowChance",
+    ["Higher Trickshot Yeet Chance"] = "SoccerTrickshotThrowChance",
+}
+
+InfoTab:CreateLabel("Script Made By: NCK", "crown")
+InfoTab:CreateLabel("User Using: " .. player.Name, "user")
+
+AutomaticTab:CreateToggle({
+   Name = "Auto Throw (Infinite, 100%)",
+   CurrentValue = false,
+   Flag = "AutoThrowInf",
+   Callback = function(Value)
+        AutoThrowInfRunning = Value
+        if Value then
+            task.spawn(function()
+                while AutoThrowInfRunning do
+                local args = {
+                    "SoccerEvent",
+                    "InfiniteShoot",
+                    1}
+                game:GetService("ReplicatedStorage"):WaitForChild("Network"):WaitForChild("Instancing_InvokeCustomFromClient"):InvokeServer(unpack(args))
+                task.wait(0.2)
+                end
+            end)
+        end
+    end,
+})
+
+AutomaticTab:CreateToggle({
+   Name = "Auto Throw (100%)",
+   CurrentValue = false,
+   Flag = "AutoThrow",
+   Callback = function(Value)
+        AutoThrowRunning = Value
+        if Value then
+            task.spawn(function()
+                while AutoThrowRunning do
+                local args = {
+                    "SoccerEvent",
+                    "Shoot",
+                    1}
+                game:GetService("ReplicatedStorage"):WaitForChild("Network"):WaitForChild("Instancing_InvokeCustomFromClient"):InvokeServer(unpack(args))
+
+                task.wait(0.2)
+                end
+            end)
+        end
+    end,
+})
+
+AutomaticTab:CreateToggle({
+   Name = "Auto Collect Yeet Orbs",
+   CurrentValue = false,
+   Flag = "AutoOrbs",
+   Callback = function(Value)
+        AutoOrbsRunning = Value
+
+        if Value then
+            task.spawn(function()
+                while AutoOrbsRunning do
+                    local debris = workspace:FindFirstChild("__DEBRIS")
+                    if debris then
+                        local types = {"Basic", "Rare", "Epic", "Legendary", "Mythical"}
+                        local chosenType = types[math.random(1, #types)]
+
+                        local folder = debris:FindFirstChild(chosenType)
+                        if folder then
+                            local orbs = folder:GetChildren()
+                            if #orbs > 0 then
+                                local target = orbs[math.random(1, #orbs)]
+
+                                if player.Character and player.Character:FindFirstChild("HumanoidRootPart") then
+                                    player.Character.HumanoidRootPart.CFrame = target.CFrame
+                                end
+                            end
+                        end
+                    end
+
+                    task.wait(0.05)
+                end
+            end)
+        end
+    end,
+})
+
+UpgradeTab:CreateDropdown({
+   Name = "Auto Upgrade (Soccer Upgrades)",
+   Options = {"Upgrade Final Egg", "More Orb Strength", "Yeet Orbs Reach", "Higher Critical Yeet Chance", "Higher Trickshot Yeet Chance"},
+   CurrentOption = {""},
+   MultipleOptions = true,
+   Flag = "AutoUpgradeDropdown",
+   Callback = function(Options)
+        SelectedUpgrades = Options
+   end,
+})
+
+local AutoUpgradeToggle = UpgradeTab:CreateToggle({
+    Name = "Auto Upgrade (Soccer Upgrades)",
+    CurrentValue = false,
+    Flag = "AutoUpgradeToggle",
+    Callback = function(Value)
+        AutoUpgradeRunning = Value
+        if Value then
+            task.spawn(function()
+                while AutoUpgradeRunning do
+                    for _, Pack in ipairs(SelectedUpgrades) do
+                        local PackId = UpgradeIds[Pack]
+                        if PackId then
+                            game:GetService("ReplicatedStorage"):WaitForChild("Network"):WaitForChild("EventUpgrades: Purchase"):InvokeServer(PackId)
+                        end
+                    end
+                    task.wait(0.001)
+                end
+            end)
+        end
+    end,
+})
